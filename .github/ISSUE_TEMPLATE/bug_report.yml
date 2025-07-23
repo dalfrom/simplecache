@@ -1,0 +1,39 @@
+name: Bug Report
+description: If something isn't working as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a bug report, please check if the issue is already present in the issues. If it is, please add a reaction or a comment to that open issue. If it isn't, please fill out the form below.
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: |
+        Describe the problem you are having in a few paragraphs.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Provide the steps to reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Run the command '...'
+        3. See error
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: |
+        The version of TempoDB you're using
+      description: |
+        Provide the version of TempoDB you're using. Please use the following format: `v0.22.0` instead of `stable`, `latest`, or `nighly`. (the output of `tempodb -v` will suffice).
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Screenshots or additional context
+      description: |
+        If you can, add screenshots to help explain your problem. And add any other context about the problem here. Such as the device you're using, etc.
