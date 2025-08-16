@@ -3,8 +3,11 @@ package server
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"strings"
+
+	"github.com/dalfrom/tempodb/pkg/server/security"
 )
 
 func Serve(port int) {
@@ -19,6 +22,12 @@ func Serve(port int) {
 
 func handleConn(conn net.Conn) {
 	defer conn.Close()
+	if err := security.Authenticate(conn); err != nil {
+		fmt.Println("Authentication error:", err)
+		io.WriteString(conn, err.Error()+"\n")
+		return
+	}
+
 	reader := bufio.NewReader(conn)
 	for {
 		line, err := reader.ReadString('\n')
@@ -27,28 +36,6 @@ func handleConn(conn net.Conn) {
 		}
 		line = strings.TrimSpace(line)
 
-		if strings.Contains(line, "AUTH") {
-			// Handle authentication
-			parts := strings.SplitN(line, " ", 3)
-			if len(parts) != 3 {
-				conn.Write([]byte("ERROR: Invalid AUTH command format\n"))
-				return
-			}
-			user, password := parts[1], parts[2]
-			fmt.Printf("Received authentication request for user-pass: %s-%s\n", user, password)
-			conn.Write([]byte("OK: Authentication successful\n"))
-
-			// We break because we will reconnect with the new credentials later, as this is a "double connection"
-			break
-		}
-
-		switch line {
-		case "status":
-			conn.Write([]byte("OK: TempoDB is running"))
-		case "ping":
-			conn.Write([]byte("PONG"))
-		default:
-			conn.Write([]byte("Unknown command: " + line))
-		}
+		conn.Write([]byte("Line that was received: " + line))
 	}
 }

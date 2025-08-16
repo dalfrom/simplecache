@@ -22,8 +22,7 @@ var ConnectCmd = &cobra.Command{
 	Use:   "connect",
 	Short: "Connect to the TempoDB server",
 	Run: func(cmd *cobra.Command, args []string) {
-		// cmdServer.Connect(user, pass, host, port)
-		handlePasswordAuth()
+		connect()
 	},
 }
 
@@ -38,8 +37,13 @@ func init() {
 	ConnectCmd.Flags().IntVar(&port, "port", 4000, "Server port [defaults to 4000]")
 }
 
-func handlePasswordAuth() {
+func connect() {
 	reader := bufio.NewReader(os.Stdin)
+
+	if pass != "" {
+		cmdServer.Connect(user, pass, host, port)
+		return
+	}
 
 	for {
 		fmt.Print("password> ")
@@ -51,19 +55,11 @@ func handlePasswordAuth() {
 			break
 		}
 
-		authenticated, err := cmdServer.CheckConnection(user, line, host, port)
-		if err != nil {
-			fmt.Println("Error:", err)
-			continue
-		}
-		if authenticated {
-			fmt.Println("Authentication successful!")
-			pass = line
-			break
-		} else {
-			fmt.Println("Authentication failed.")
+		pass = line
+		if pass != "" {
+			cmdServer.Connect(user, pass, host, port)
+			return
 		}
 	}
-
 	cmdServer.Connect(user, pass, host, port)
 }
