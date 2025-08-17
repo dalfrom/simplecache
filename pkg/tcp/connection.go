@@ -1,26 +1,17 @@
-package server
+package tcp
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"net"
 	"strings"
 
-	"github.com/dalfrom/tempodb/pkg/server/security"
+	"github.com/dalfrom/tempodb/pkg/tcp/security"
 )
 
-func Serve(port int) {
-	ln, _ := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	fmt.Printf("TempoDB server running on :%d\n", port)
-
-	for {
-		conn, _ := ln.Accept()
-		go handleConn(conn)
-	}
-}
-
-func handleConn(conn net.Conn) {
+func handleConn(_ context.Context, conn net.Conn) {
 	defer conn.Close()
 	if err := security.Authenticate(conn); err != nil {
 		fmt.Println("Authentication error:", err)
