@@ -10,7 +10,6 @@ import (
 
 	//"github.com/dalfrom/tempodb/pkg/logger"
 	"github.com/dalfrom/tempodb/pkg/telemetry"
-	"github.com/dalfrom/tempodb/pkg/wal"
 )
 
 type Tempo struct {
@@ -37,9 +36,6 @@ type Tempo struct {
 
 	// This manages telemetry
 	Telemetry telemetry.Telemetry
-
-	// Manages write-ahead logging
-	Wal wal.Wal
 }
 
 func (t Tempo) Start() (err error) {

@@ -8,6 +8,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/dalfrom/tempodb/pkg/scl"
 	"github.com/dalfrom/tempodb/pkg/tcp/security"
 )
 
@@ -28,5 +29,12 @@ func handleConn(_ context.Context, conn net.Conn) {
 		line = strings.TrimSpace(line)
 
 		conn.Write([]byte("Line that was received: " + line))
+
+		err = scl.Extract(line)
+		if err != nil {
+			fmt.Println("Error extracting SCL:", err)
+			io.WriteString(conn, err.Error()+"\n")
+			return
+		}
 	}
 }

@@ -1,30 +1,64 @@
-# TempoDB
+# simplecache
 
-A temporal-driven NoSQL versioned database.
+This is a pure in-memory cache for backends
 
-While still working on it, this projects aims at answering the question:
-- What happens to the data that is unused after a long time?
+This allows for classic CRUD operations
 
-Let's give an example. Say we have a Postgres instance of all the matches to be ever played in NBA, from the first ever match on November the 1st 1946, until today. This totals up to over 60000 matches played.
+There is no:
+- WAL
+- in-disk data storage
 
-If there are tables related to statistics for each player for each match, how likely is it that someone wants to find out the details from a match in 1950? Very unlikely.
+This is a cache, not a message broker or a hybrid mix with in-disk data. The concept of a cache is to stay in-memory, since the DB already stores data in-disk.
 
-For this reason, when a certain time threshold is met, data should be moved away from the disk the DB resides on and be put in a 'cold storage'.
+`SCL` is `Simplecache Caching Language`, the language used to manage operations inside the cache.
 
-What would be the benefits of this architecture?
- 1. First off, removes data from storage. Data that is never read is backed up in a cold storage since it's never accessed and is just sat there.
- 2. Second of which, this simplifies the LSMT structure of the DB, as less leaves are kept in the system and this increases the speed the tree is traversed, as well as efficiency of a bloom filter.
+## Run locally
+
+To run:
+ 1. Clone via `git clone`
+ 2. Run `go mod tidy`
+ 3. Start by running `go run main.go <command>`
+
+## Run locally with parser/lexer
+ 1. Follow steps 1,2 from above
+ 2. run `cd pkg/scl && goyacc -o scl_parser.go -p yy scl.y`
+ 3. run `cd ../.. && go run .`
+
+Alternatively, you can compile and install the go package via `go install`, and then reference commands without `go run main.go`
+
+Default port is 4000 but running with `-p <port>` allows for custom port.
+
+## Concepts
+
+The system is thought to be simple, with effective cache invalidation.
+
+### Set data
+
+To add data to the cache, use `SET <table>:<key>:<value>` where value can be anything. From any default type (int, string, bool) to more complex maps, json, binaries
+
+There are some options such as TTI (Time To Invalidate) as to when invalidate a record. If the cache gets a record invalidated, when being queried, the cache returns no hit (`nil`)
 
 
-On top of this, since this is a NoSQL database (like CassandraDB), the system keep data in memory until moved to storage based on threshold. This will be improved with the addon of rules, which are specific configurations that allow the TempoDB to expose data in-memory (instad of disk) directly from a table, with specific columns only.
+### Get data
 
-Now, versioning and replication.
+To get data from the cache, run `GET <table>:<key>` and the data will be returned. Since the data is anything, it will be returned as an `interface{} | any`.
 
-This DB uses a similar SQL-Like language with some updates and changes. Moreover, it allows for table versioning with either Semantic (semver) or Incremental Versioning.
+This also means that you can get all the data from a table running `GET <table>:*`. This returns `[]interface{} | []any`.
 
-Replication for updates never touch data that is put in cold storage, since updating that data makes no sense under the idea that is never accessed.
+If, as above, the record was invalidated, the operation will return an empty record (`nil`).
 
-However, when there is data in-memory and an update is made, the data is replicated based on the configuration of the platform:
-- loose replication -> data is updated in-memory and it's considerd a success. Then, the data is replicated in the background on-disk
-if the replication on-disk fails, the data is lost.
-- strong replication -> data must be saved both in-memory and on-disk for the system to consider it a success. This is mroe consistency but slower
+
+### Delete data
+To delete data, run `DELETE <table>:<key>`. You can delete all the data from a table with `TRUNCACE <table>` or `DROP <table>:*`.
+
+You can delete a single data element via key, or drop the dedicated table:
+ - Truncate will unlink the table directly, so it becomes unavailable to query;
+ - Drop will keep the table but delete every record in it by traversing the tree and deleting each element avoiding tree-rebalancing.
+
+
+### Update data
+To update data, run `UPDATE <table>:<key>:<new_value>`
+
+The new value will override the old data directly. If the relation `<table>:<key>` returns no record, an insert operation (SET) is performed.
+
+Via update, you can also change the TTI of the record, by running `UPDATE <table>:<key> TTI=<new_time_to_invalidate>`. If this relation has no record, a SET is performed with TTI
