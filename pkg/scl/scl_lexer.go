@@ -16,6 +16,8 @@ const (
 	Dot       byte = '.'
 	Colon     byte = ':'
 	Semicolon byte = ';'
+	EqualSign byte = '='
+	Asterisk  byte = '*'
 )
 
 func (l *lexer) Lex(lval *yySymType) int {
@@ -63,6 +65,10 @@ func (l *lexer) Lex(lval *yySymType) int {
 			return SEMICOLON
 		case '.':
 			return DOT
+		case '=':
+			return EQ
+		case '*':
+			return ASTERISK
 		}
 
 		panic(fmt.Sprintf("unexpected character: %q", ch))
@@ -109,6 +115,10 @@ func (l *lexer) handleLetter(lval *yySymType) int {
 
 		if l.input[l.pos] == Colon {
 			return KEY
+		}
+
+		if l.input[l.pos] == EqualSign {
+			return TTI
 		}
 
 		if l.input[l.pos] == Semicolon {

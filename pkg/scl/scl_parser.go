@@ -15,6 +15,7 @@ type SetStmt struct {
 	Collection string
 	Key        string
 	Value      string
+	Config     Config
 }
 
 type GetStmt struct {
@@ -40,12 +41,18 @@ type UpdateStmt struct {
 	Collection string
 	Key        string
 	Value      string
+	Config     Config
+}
+
+type Config struct {
+	Tti string // Time To Invalidate
 }
 
 type yySymType struct {
 	yys  int
 	str  string
 	stmt Statement
+	cfg  Config
 }
 
 type yyXError struct {
@@ -53,14 +60,16 @@ type yyXError struct {
 }
 
 const (
-	yyDefault  = 57361
+	yyDefault  = 57364
 	yyEofCode  = 57344
+	ASTERISK   = 57363
 	BOOL       = 57350
 	COLLECTION = 57346
 	COLON      = 57358
 	DELETE     = 57354
 	DOT        = 57360
 	DROP       = 57356
+	EQ         = 57362
 	GET        = 57353
 	JSON       = 57351
 	KEY        = 57347
@@ -69,55 +78,63 @@ const (
 	SET        = 57352
 	STRING     = 57348
 	TRUNCATE   = 57355
+	TTI        = 57361
 	UPDATE     = 57357
 	yyErrCode  = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -21
+	yyTabOfs   = -27
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57359: 0,  // SEMICOLON (19x)
+		57359: 0,  // SEMICOLON (25x)
 		57346: 1,  // COLLECTION (6x)
-		57362: 2,  // collection (6x)
-		57360: 3,  // DOT (5x)
-		57347: 4,  // KEY (4x)
-		57366: 5,  // key (4x)
-		57344: 6,  // $end (3x)
-		57358: 7,  // COLON (3x)
-		57354: 8,  // DELETE (3x)
-		57356: 9,  // DROP (3x)
-		57353: 10, // GET (3x)
-		57352: 11, // SET (3x)
-		57355: 12, // TRUNCATE (3x)
-		57357: 13, // UPDATE (3x)
-		57350: 14, // BOOL (2x)
-		57351: 15, // JSON (2x)
-		57349: 16, // NUMBER (2x)
-		57348: 17, // STRING (2x)
-		57372: 18, // value (2x)
-		57363: 19, // delete_stmt (1x)
-		57364: 20, // drop_stmt (1x)
-		57365: 21, // get_stmt (1x)
-		57367: 22, // set_stmt (1x)
-		57368: 23, // statement (1x)
-		57369: 24, // statements (1x)
-		57370: 25, // truncate_stmt (1x)
-		57371: 26, // update_stmt (1x)
-		57361: 27, // $default (0x)
-		57345: 28, // error (0x)
+		57366: 2,  // collection (6x)
+		57361: 3,  // TTI (6x)
+		57360: 4,  // DOT (5x)
+		57371: 5,  // key (4x)
+		57347: 6,  // KEY (4x)
+		57349: 7,  // NUMBER (4x)
+		57344: 8,  // $end (3x)
+		57358: 9,  // COLON (3x)
+		57354: 10, // DELETE (3x)
+		57356: 11, // DROP (3x)
+		57353: 12, // GET (3x)
+		57352: 13, // SET (3x)
+		57355: 14, // TRUNCATE (3x)
+		57357: 15, // UPDATE (3x)
+		57350: 16, // BOOL (2x)
+		57367: 17, // config (2x)
+		57351: 18, // JSON (2x)
+		57348: 19, // STRING (2x)
+		57377: 20, // value (2x)
+		57363: 21, // ASTERISK (1x)
+		57365: 22, // asterisk (1x)
+		57368: 23, // delete_stmt (1x)
+		57369: 24, // drop_stmt (1x)
+		57362: 25, // EQ (1x)
+		57370: 26, // get_stmt (1x)
+		57372: 27, // set_stmt (1x)
+		57373: 28, // statement (1x)
+		57374: 29, // statements (1x)
+		57375: 30, // truncate_stmt (1x)
+		57376: 31, // update_stmt (1x)
+		57364: 32, // $default (0x)
+		57345: 33, // error (0x)
 	}
 
 	yySymNames = []string{
 		"SEMICOLON",
 		"COLLECTION",
 		"collection",
+		"TTI",
 		"DOT",
-		"KEY",
 		"key",
+		"KEY",
+		"NUMBER",
 		"$end",
 		"COLON",
 		"DELETE",
@@ -127,12 +144,15 @@ var (
 		"TRUNCATE",
 		"UPDATE",
 		"BOOL",
+		"config",
 		"JSON",
-		"NUMBER",
 		"STRING",
 		"value",
+		"ASTERISK",
+		"asterisk",
 		"delete_stmt",
 		"drop_stmt",
+		"EQ",
 		"get_stmt",
 		"set_stmt",
 		"statement",
@@ -147,79 +167,95 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {24, 0},
-		2:  {24, 3},
-		3:  {23, 1},
-		4:  {23, 1},
-		5:  {23, 1},
-		6:  {23, 1},
-		7:  {23, 1},
-		8:  {23, 1},
-		9:  {22, 6},
-		10: {21, 4},
-		11: {19, 4},
-		12: {25, 2},
-		13: {20, 2},
-		14: {26, 6},
-		15: {2, 1},
-		16: {5, 1},
-		17: {18, 1},
-		18: {18, 1},
-		19: {18, 1},
-		20: {18, 1},
+		1:  {29, 0},
+		2:  {29, 3},
+		3:  {28, 1},
+		4:  {28, 1},
+		5:  {28, 1},
+		6:  {28, 1},
+		7:  {28, 1},
+		8:  {28, 1},
+		9:  {27, 6},
+		10: {27, 7},
+		11: {26, 4},
+		12: {26, 4},
+		13: {23, 4},
+		14: {30, 2},
+		15: {24, 2},
+		16: {31, 6},
+		17: {31, 7},
+		18: {2, 1},
+		19: {5, 1},
+		20: {20, 1},
+		21: {20, 1},
+		22: {20, 1},
+		23: {20, 1},
+		24: {22, 1},
+		25: {17, 3},
+		26: {17, 2},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [40][]uint8{
+	yyParseTab = [48][]uint8{
 		// 0
-		{6: 20, 8: 20, 20, 20, 20, 20, 20, 24: 22},
-		{6: 21, 8: 32, 34, 31, 30, 33, 35, 19: 26, 28, 25, 24, 23, 25: 27, 29},
-		{60},
-		{18},
-		{17},
+		{8: 26, 10: 26, 26, 26, 26, 26, 26, 29: 28},
+		{8: 27, 10: 38, 40, 37, 36, 39, 41, 23: 32, 34, 26: 31, 30, 29, 30: 33, 35},
+		{74},
+		{24},
+		{23},
 		// 5
+		{22},
+		{21},
+		{20},
+		{19},
+		{1: 43, 68},
+		// 10
+		{1: 43, 63},
+		{1: 43, 60},
+		{1: 43, 59},
+		{1: 43, 58},
+		{1: 43, 42},
+		// 15
+		{4: 44},
+		{9, 4: 9},
+		{5: 45, 46},
+		{9: 47},
+		{8, 9: 8},
+		// 20
+		{7: 50, 16: 51, 18: 52, 49, 48},
+		{11, 3: 54, 17: 53},
+		{7, 3: 7},
+		{6, 3: 6},
+		{5, 3: 5},
+		// 25
+		{4, 3: 4},
+		{10},
+		{7: 56, 25: 55},
+		{7: 57},
+		{1},
+		// 30
+		{2},
+		{12},
+		{13},
+		{4: 61},
+		{5: 62, 46},
+		// 35
+		{14},
+		{4: 64},
+		{5: 65, 46, 21: 67, 66},
 		{16},
 		{15},
-		{14},
-		{13},
-		{1: 37, 55},
-		// 10
-		{1: 37, 52},
-		{1: 37, 49},
-		{1: 37, 48},
-		{1: 37, 47},
-		{1: 37, 36},
-		// 15
-		{3: 38},
-		{6, 3: 6},
-		{4: 40, 39},
-		{7: 41},
-		{5, 7: 5},
-		// 20
-		{14: 45, 46, 44, 43, 42},
-		{7},
-		{4},
+		// 40
 		{3},
-		{2},
-		// 25
-		{1},
-		{8},
-		{9},
-		{3: 50},
-		{4: 40, 51},
-		// 30
-		{10},
-		{3: 53},
-		{4: 40, 54},
-		{11},
-		{3: 56},
-		// 35
-		{4: 40, 57},
-		{7: 58},
-		{14: 45, 46, 44, 43, 59},
-		{12},
-		{6: 19, 8: 19, 19, 19, 19, 19, 19},
+		{4: 69},
+		{5: 70, 46},
+		{9: 71},
+		{7: 50, 16: 51, 18: 52, 49, 72},
+		// 45
+		{18, 3: 54, 17: 73},
+		{17},
+		{8: 25, 10: 25, 25, 25, 25, 25, 25},
 	}
 )
 
@@ -260,7 +296,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 28
+	const yyError = 33
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -500,23 +536,43 @@ yynewstate:
 		}
 	case 10:
 		{
-			yyVAL.stmt = &GetStmt{Collection: yyS[yypt-2].str, Key: yyS[yypt-0].str}
+			yyVAL.stmt = &SetStmt{Collection: yyS[yypt-5].str, Key: yyS[yypt-3].str, Value: yyS[yypt-1].str, Config: yyS[yypt-0].cfg}
 		}
 	case 11:
 		{
-			yyVAL.stmt = &DeleteStmt{Collection: yyS[yypt-2].str, Key: yyS[yypt-0].str}
+			yyVAL.stmt = &GetStmt{Collection: yyS[yypt-2].str, Key: yyS[yypt-0].str}
 		}
 	case 12:
 		{
-			yyVAL.stmt = &TruncateStmt{Collection: yyS[yypt-0].str}
+			yyVAL.stmt = &GetStmt{Collection: yyS[yypt-2].str, Key: "*"}
 		}
 	case 13:
 		{
-			yyVAL.stmt = &DropStmt{Collection: yyS[yypt-0].str, Key: "*"}
+			yyVAL.stmt = &DeleteStmt{Collection: yyS[yypt-2].str, Key: yyS[yypt-0].str}
 		}
 	case 14:
 		{
+			yyVAL.stmt = &TruncateStmt{Collection: yyS[yypt-0].str}
+		}
+	case 15:
+		{
+			yyVAL.stmt = &DropStmt{Collection: yyS[yypt-0].str, Key: "*"}
+		}
+	case 16:
+		{
 			yyVAL.stmt = &UpdateStmt{Collection: yyS[yypt-4].str, Key: yyS[yypt-2].str, Value: yyS[yypt-0].str}
+		}
+	case 17:
+		{
+			yyVAL.stmt = &UpdateStmt{Collection: yyS[yypt-5].str, Key: yyS[yypt-3].str, Value: yyS[yypt-1].str, Config: yyS[yypt-0].cfg}
+		}
+	case 25:
+		{
+			yyVAL.cfg = Config{Tti: yyS[yypt-0].str}
+		}
+	case 26:
+		{
+			yyVAL.cfg = Config{Tti: yyS[yypt-0].str}
 		}
 
 	}

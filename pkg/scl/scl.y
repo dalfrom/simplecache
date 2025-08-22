@@ -12,6 +12,7 @@ type SetStmt struct {
     Collection   string
     Key     string
     Value   string
+    Config  Config
 }
 
 type GetStmt struct {
@@ -37,20 +38,27 @@ type UpdateStmt struct {
     Collection   string
     Key     string
     Value   string
+    Config  Config
+}
+
+type Config struct {
+  Tti string // Time To Invalidate
 }
 %}
 
 %union {
     str string
     stmt Statement
+    cfg Config
 }
 
 %token <str> COLLECTION KEY STRING NUMBER BOOL JSON
 %token SET GET DELETE TRUNCATE DROP UPDATE
-%token COLON SEMICOLON DOT
+%token COLON SEMICOLON DOT TTI EQ ASTERISK
 
 %type <stmt> statement set_stmt get_stmt delete_stmt truncate_stmt drop_stmt update_stmt
 %type <str> collection key value
+%type <cfg> config
 %%
 
 statements:
@@ -91,11 +99,17 @@ set_stmt:
     SET collection DOT key COLON value {
         $$ = &SetStmt{Collection: $2, Key: $4, Value: $6}
     }
+    | SET collection DOT key COLON value config {
+        $$ = &SetStmt{Collection: $2, Key: $4, Value: $6, Config: $7}
+    }
   ;
 
 get_stmt:
     GET collection DOT key {
         $$ = &GetStmt{Collection: $2, Key: $4}
+    }
+    | GET collection DOT asterisk {
+        $$ = &GetStmt{Collection: $2, Key: "*"}
     }
   ;
 
@@ -121,6 +135,9 @@ update_stmt:
     UPDATE collection DOT key COLON value {
         $$ = &UpdateStmt{Collection: $2, Key: $4, Value: $6}
     }
+    | UPDATE collection DOT key COLON value config {
+        $$ = &UpdateStmt{Collection: $2, Key: $4, Value: $6, Config: $7}
+    }
   ;
 
 collection:
@@ -136,6 +153,19 @@ value:
   | NUMBER
   | BOOL
   | JSON
+  ;
+
+asterisk:
+    ASTERISK
+  ;
+
+config:
+    TTI EQ NUMBER {
+        $$ = Config{Tti: $3}
+    }
+    | TTI NUMBER {
+        $$ = Config{Tti: $2}
+    }
   ;
 
 %%

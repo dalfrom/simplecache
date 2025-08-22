@@ -34,31 +34,31 @@ The system is thought to be simple, with effective cache invalidation.
 
 ### Set data
 
-To add data to the cache, use `SET <table>:<key>:<value>` where value can be anything. From any default type (int, string, bool) to more complex maps, json, binaries
+To add data to the cache, use `SET <collection>.<key>:<value>` where value can be anything. From any default type (int, string, bool) to more complex maps, json, binaries
 
 There are some options such as TTI (Time To Invalidate) as to when invalidate a record. If the cache gets a record invalidated, when being queried, the cache returns no hit (`nil`)
 
 
 ### Get data
 
-To get data from the cache, run `GET <table>:<key>` and the data will be returned. Since the data is anything, it will be returned as an `interface{} | any`.
+To get data from the cache, run `GET <collection>.<key>` and the data will be returned. Since the data is anything, it will be returned as an `interface{} | any`.
 
-This also means that you can get all the data from a table running `GET <table>:*`. This returns `[]interface{} | []any`.
+This also means that you can get all the data from a collection running `GET <collection>.*`. This returns `[]interface{} | []any`.
 
 If, as above, the record was invalidated, the operation will return an empty record (`nil`).
 
 
 ### Delete data
-To delete data, run `DELETE <table>:<key>`. You can delete all the data from a table with `TRUNCACE <table>` or `DROP <table>:*`.
+To delete data, run `DELETE <collection>.<key>`. You can delete all the data from a collection with `TRUNCACE | DROP <collection>`.
 
-You can delete a single data element via key, or drop the dedicated table:
- - Truncate will unlink the table directly, so it becomes unavailable to query;
- - Drop will keep the table but delete every record in it by traversing the tree and deleting each element avoiding tree-rebalancing.
+You can delete a single data element via key, or drop the dedicated collection:
+ - Drop will unlink the collection directly, so it becomes unavailable to query;
+ - Truncate will keep the collection but delete every record in it by traversing the tree and deleting each element avoiding tree-rebalancing (this locks the table).
 
 
 ### Update data
-To update data, run `UPDATE <table>:<key>:<new_value>`
+To update data, run `UPDATE <collection>.<key>:<new_value>`
 
-The new value will override the old data directly. If the relation `<table>:<key>` returns no record, an insert operation (SET) is performed.
+The new value will override the old data directly. If the relation `<collection>.<key>` returns no record, an insert operation (SET) is performed.
 
-Via update, you can also change the TTI of the record, by running `UPDATE <table>:<key> TTI=<new_time_to_invalidate>`. If this relation has no record, a SET is performed with TTI
+Via update, you can also change the TTI of the record, by running `UPDATE <collection>.<key> TTI=<new_time_to_invalidate>`. If this relation has no record, a SET is performed with TTI
