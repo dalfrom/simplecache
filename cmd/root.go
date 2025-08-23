@@ -7,9 +7,15 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/dalfrom/tempodb/pkg/tcp"
 )
 
 const longDescription = `Tempo controls the TempoDB Database system.`
+
+var (
+	ServerCache *tcp.ServerCache
+)
 
 // rootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{

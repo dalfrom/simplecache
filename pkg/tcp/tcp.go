@@ -9,10 +9,11 @@ import (
 	//"os"
 
 	//"github.com/dalfrom/tempodb/pkg/logger"
+	"github.com/dalfrom/tempodb/pkg/cache"
 	"github.com/dalfrom/tempodb/pkg/telemetry"
 )
 
-type Tempo struct {
+type ServerCache struct {
 	// The main listener for incoming TCP connections
 	Net net.Listener
 
@@ -22,11 +23,6 @@ type Tempo struct {
 
 	// Port
 	Port int
-
-	// Flags for the status of TempoDB
-	IsStarting     bool
-	IsShuttingDown bool
-	IsRunning      bool
 
 	// The configuration
 	Cfgs map[string]any
@@ -38,24 +34,29 @@ type Tempo struct {
 	Telemetry telemetry.Telemetry
 }
 
-func (t Tempo) Start() (err error) {
+func (t ServerCache) Start() (err error) {
 	t.Net, err = net.Listen("tcp", fmt.Sprintf(":%d", t.Port))
 	if err != nil {
 		fmt.Println("Error starting TempoDB server:", err)
 		return fmt.Errorf("failed to start TempoDB server: %w", err)
 	}
 
+	cache.CreateCache()
+
 	fmt.Printf("TempoDB server listening on :%d\n", t.Port)
 	ctx := context.Background()
 	for {
 		conn, _ := t.Net.Accept()
 		go handleConn(ctx, conn)
+	}
+}
 
-		if t.IsShuttingDown {
+func (t ServerCache) Stop(force bool) {
+	if !force {
+		for _, conn := range t.OpenConnections {
 			conn.Close()
-			break
 		}
 	}
 
-	return err
+	t.Net.Close()
 }

@@ -1,4 +1,4 @@
-package start
+package cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -6,19 +6,13 @@ import (
 	"github.com/dalfrom/tempodb/pkg/tcp"
 )
 
-var (
-	port int
-
-	tempo *tcp.Tempo
-)
-
 // StartCmd represents the start command
 var StartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the TempoDB server",
 	Run: func(cmd *cobra.Command, args []string) {
-		tempo = &tcp.Tempo{Port: port}
-		tempo.Start()
+		ServerCache = &tcp.ServerCache{Port: port}
+		ServerCache.Start()
 	},
 }
 
