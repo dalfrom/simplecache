@@ -14,9 +14,6 @@ var (
 	dropStmt     *DropStmt
 	updateStmt   *UpdateStmt
 
-	// General statement is the map container for the values of a statement
-	generalStmt map[string]any = make(map[string]any)
-
 	// Statement data holders
 	collection string
 	key        string
@@ -96,4 +93,46 @@ func PrintToStd(token Statement, stmtType string) error {
 	// TODO: Implement
 
 	return nil
+}
+
+func GetScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return getStmt, nil
+}
+
+func SetScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return setStmt, nil
+}
+
+func DeleteScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return deleteStmt, nil
+}
+
+func TruncateScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return truncateStmt, nil
+}
+
+func DropScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return dropStmt, nil
+}
+
+func UpdateScl(input string) (any, error) {
+	if err := Extract(input); err != nil {
+		return nil, err
+	}
+	return updateStmt, nil
 }
