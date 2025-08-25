@@ -2,4 +2,4 @@
 
 ## Reporting a bug
 
-Report security bugs via GitHub [issues](https://github.com/dalfrom/tempodb/issues).
+Report security bugs via GitHub [issues](https://github.com/dalfrom/simplecache/issues).

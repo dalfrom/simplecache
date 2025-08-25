@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dalfrom/tempodb/cmd"
+	"github.com/dalfrom/simplecache/cmd"
 )
 
 func main() {

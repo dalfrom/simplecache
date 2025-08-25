@@ -21,7 +21,7 @@ var SetConfigCmd = &cobra.Command{
 			}
 			key, value := kv[0], kv[1]
 
-			println("Setting TempoDB configuration:", key, "=", value)
+			println("Setting simplecache configuration:", key, "=", value)
 		}
 	},
 }
@@ -36,16 +36,16 @@ var GetConfigCmd = &cobra.Command{
 			return
 		}
 		key := args[0]
-		println("Getting TempoDB configuration for key:", key)
+		println("Getting simplecache configuration for key:", key)
 	},
 }
 
 // ResetConfigCmd represents the reset config command
 var ResetConfigCmd = &cobra.Command{
 	Use:   "reset-config",
-	Short: "Reset the TempoDB configuration to default values",
+	Short: "Reset the simplecache configuration to default values",
 	Run: func(cmd *cobra.Command, args []string) {
-		println("Resetting TempoDB configuration to default values")
+		println("Resetting simplecache configuration to default values")
 	},
 }
 

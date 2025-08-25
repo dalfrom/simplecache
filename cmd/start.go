@@ -3,13 +3,13 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/dalfrom/tempodb/pkg/tcp"
+	"github.com/dalfrom/simplecache/pkg/tcp"
 )
 
 // StartCmd represents the start command
 var StartCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the TempoDB server",
+	Short: "Start the simplecache server",
 	Run: func(cmd *cobra.Command, args []string) {
 		ServerCache = &tcp.ServerCache{Port: port}
 		ServerCache.Start()
@@ -18,9 +18,9 @@ var StartCmd = &cobra.Command{
 
 var StatusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "Check the status of the TempoDB server",
+	Short: "Check the status of the simplecache server",
 	Run: func(cmd *cobra.Command, args []string) {
-		println("Checking TempoDB server status...")
+		println("Checking simplecache server status...")
 	},
 }
 

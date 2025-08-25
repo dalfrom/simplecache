@@ -8,10 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/dalfrom/tempodb/pkg/tcp"
+	"github.com/dalfrom/simplecache/pkg/tcp"
 )
-
-const longDescription = `Tempo controls the TempoDB Database system.`
 
 var (
 	ServerCache *tcp.ServerCache
@@ -19,9 +17,8 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "tempodb",
-	Short: "A brief description of your application",
-	Long:  longDescription,
+	Use:   "simplecache",
+	Short: "A no-brainer caching solution",
 }
 
 func Execute() {

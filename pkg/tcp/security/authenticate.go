@@ -8,7 +8,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/dalfrom/tempodb/pkg/tcp/security/plain"
+	"github.com/dalfrom/simplecache/pkg/tcp/security/plain"
 )
 
 func Authenticate(conn net.Conn) error {

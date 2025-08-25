@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"net"
 
-	//"github.com/dalfrom/tempodb/pkg/logger"
-	"github.com/dalfrom/tempodb/pkg/cache"
-	"github.com/dalfrom/tempodb/pkg/telemetry"
+	//"github.com/dalfrom/simplecache/pkg/logger"
+	"github.com/dalfrom/simplecache/pkg/cache"
+	"github.com/dalfrom/simplecache/pkg/telemetry"
 )
 
 type ServerCache struct {
@@ -34,13 +34,13 @@ type ServerCache struct {
 func (t ServerCache) Start() (err error) {
 	t.Net, err = net.Listen("tcp", fmt.Sprintf(":%d", t.Port))
 	if err != nil {
-		fmt.Println("Error starting TempoDB server:", err)
-		return fmt.Errorf("failed to start TempoDB server: %w", err)
+		fmt.Println("Error starting simplecache server:", err)
+		return fmt.Errorf("failed to start simplecache server: %w", err)
 	}
 
 	cache.CreateCache()
 
-	fmt.Printf("TempoDB server listening on :%d\n", t.Port)
+	fmt.Printf("simplecache server listening on :%d\n", t.Port)
 	for {
 		conn, _ := t.Net.Accept()
 		go handleConn(&cache.SimpleCache, conn)

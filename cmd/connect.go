@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	cmdServer "github.com/dalfrom/tempodb/pkg/cmd"
+	cmdServer "github.com/dalfrom/simplecache/pkg/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ var (
 // ConnectCmd represents the connect command
 var ConnectCmd = &cobra.Command{
 	Use:   "connect",
-	Short: "Connect to the TempoDB server",
+	Short: "Connect to the simplecache server",
 	Run: func(cmd *cobra.Command, args []string) {
 		connect()
 	},

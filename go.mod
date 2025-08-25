@@ -1,4 +1,4 @@
-module github.com/dalfrom/tempodb
+module github.com/dalfrom/simplecache
 
 go 1.23.0
 

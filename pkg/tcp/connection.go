@@ -7,9 +7,9 @@ import (
 	"net"
 	"strings"
 
-	"github.com/dalfrom/tempodb/pkg/cache"
-	"github.com/dalfrom/tempodb/pkg/scl"
-	"github.com/dalfrom/tempodb/pkg/tcp/security"
+	"github.com/dalfrom/simplecache/pkg/cache"
+	"github.com/dalfrom/simplecache/pkg/scl"
+	"github.com/dalfrom/simplecache/pkg/tcp/security"
 )
 
 func handleConn(cache *cache.Cache, conn net.Conn) {

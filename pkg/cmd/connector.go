@@ -47,11 +47,11 @@ func Connect(user, password, host string, port int) {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Welcome to tempodb SQL interface")
+	fmt.Println("Welcome to simplecache SQL interface")
 
 	// Start REPL loop
 	for {
-		fmt.Print("tempodb> ")
+		fmt.Print("simplecache> ")
 		line, _ := reader.ReadString('\n')
 		line = strings.TrimSpace(line)
 		if line == "" {

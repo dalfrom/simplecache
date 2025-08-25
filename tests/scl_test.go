@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dalfrom/tempodb/pkg/scl"
+	"github.com/dalfrom/simplecache/pkg/scl"
 )
 
 // TestSetScl calls scl.SetScl with a valid SET statement, checking

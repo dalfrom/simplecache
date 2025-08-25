@@ -11,8 +11,8 @@ import (
 var VersionCmd = &cobra.Command{
 	Use:     "version",
 	Aliases: []string{"v"},
-	Example: "tempodb version",
-	Short:   "Print the version of TempoDB",
+	Example: "simplecache version",
+	Short:   "Print the version of simplecache",
 	Run:     getVersion,
 }
 
@@ -29,5 +29,5 @@ func getVersion(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println("TempoDB version:", versionData["version"])
+	fmt.Println("simplecache version:", versionData["version"])
 }

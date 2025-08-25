@@ -27,9 +27,9 @@ body:
   - type: input
     attributes:
       label: |
-        The version of TempoDB you're using
+        The version of simplecache you're using
       description: |
-        Provide the version of TempoDB you're using. Please use the following format: `v0.22.0` instead of `stable`, `latest`, or `nighly`. (the output of `tempodb -v` will suffice).
+        Provide the version of simplecache you're using. Please use the following format: `v0.22.0` instead of `stable`, `latest`, or `nighly`. (the output of `simplecache -v` will suffice).
     validations:
       required: true
   - type: textarea
