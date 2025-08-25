@@ -79,7 +79,7 @@ statements:
     case *UpdateStmt:
       stmtType = "UPDATE"
     }
-    err := PrintToStd($2, stmtType)
+    err := ExtractStatementDataFromToken($2, stmtType)
 		if err != nil {
 			fmt.Println("Error extracting SCL:", err)
 		}

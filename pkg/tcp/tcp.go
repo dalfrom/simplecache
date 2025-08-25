@@ -1,12 +1,9 @@
 package tcp
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net"
-
-	//"os"
 
 	//"github.com/dalfrom/tempodb/pkg/logger"
 	"github.com/dalfrom/tempodb/pkg/cache"
@@ -44,10 +41,9 @@ func (t ServerCache) Start() (err error) {
 	cache.CreateCache()
 
 	fmt.Printf("TempoDB server listening on :%d\n", t.Port)
-	ctx := context.Background()
 	for {
 		conn, _ := t.Net.Accept()
-		go handleConn(ctx, conn)
+		go handleConn(&cache.SimpleCache, conn)
 	}
 }
 

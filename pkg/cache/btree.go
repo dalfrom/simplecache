@@ -1,7 +1,12 @@
 package cache
 
+import (
+	"sync"
+)
+
 type Btree struct {
 	Root *Node
+	mu   sync.RWMutex
 }
 
 type Node struct {
@@ -14,6 +19,9 @@ type Node struct {
 }
 
 func (bt *Btree) Get(key string) (any, bool) {
+	bt.mu.RLock()
+	defer bt.mu.RUnlock()
+
 	node := bt.Root
 	for node != nil {
 		if node.Key == key {
@@ -29,14 +37,19 @@ func (bt *Btree) Get(key string) (any, bool) {
 }
 
 func (bt *Btree) Set(key string, value any) {
+	// The mutex is already inside the insert function
 	bt.Root = bt.insert(bt.Root, key, value)
 }
 
 func (bt *Btree) Delete(key string) {
+	// The mutex is already inside the remove function
 	bt.Root = bt.remove(bt.Root, key)
 }
 
 func (bt *Btree) Clear() {
+	bt.mu.Lock()
+	defer bt.mu.Unlock()
+
 	bt.Root = nil
 }
 
@@ -53,6 +66,9 @@ func (bt *Btree) RemoveNode(key string) {
 }
 
 func (bt *Btree) insert(node *Node, key string, value any) *Node {
+	bt.mu.Lock()
+	defer bt.mu.Unlock()
+
 	if node == nil {
 		return &Node{
 			Key:   key,
@@ -68,6 +84,9 @@ func (bt *Btree) insert(node *Node, key string, value any) *Node {
 }
 
 func (bt *Btree) remove(node *Node, key string) *Node {
+	bt.mu.Lock()
+	defer bt.mu.Unlock()
+
 	if node == nil {
 		return nil
 	}
@@ -100,6 +119,9 @@ func (bt *Btree) findMin(node *Node) *Node {
 }
 
 func (bt *Btree) traverse(node *Node, visit func(*Node)) {
+	bt.mu.RLock()
+	defer bt.mu.RUnlock()
+
 	if node == nil {
 		return
 	}

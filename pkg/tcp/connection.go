@@ -2,17 +2,17 @@ package tcp
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"net"
 	"strings"
 
+	"github.com/dalfrom/tempodb/pkg/cache"
 	"github.com/dalfrom/tempodb/pkg/scl"
 	"github.com/dalfrom/tempodb/pkg/tcp/security"
 )
 
-func handleConn(_ context.Context, conn net.Conn) {
+func handleConn(cache *cache.Cache, conn net.Conn) {
 	defer conn.Close()
 	if err := security.Authenticate(conn); err != nil {
 		fmt.Println("Authentication error:", err)
@@ -28,13 +28,39 @@ func handleConn(_ context.Context, conn net.Conn) {
 		}
 		line = strings.TrimSpace(line)
 
-		conn.Write([]byte("Line that was received: " + line))
+		fmt.Fprintf(conn, "Line that was received: %s\n", line)
 
 		err = scl.Extract(line)
 		if err != nil {
 			fmt.Println("Error extracting SCL:", err)
-			io.WriteString(conn, err.Error()+"\n")
+			fmt.Fprintf(conn, err.Error()+"\n")
 			return
+		}
+
+		switch scl.Type {
+		case "SET":
+			cache.Set(scl.Collection, scl.Key, scl.Value)
+		case "GET":
+			value, found := cache.Get(scl.Collection, scl.Key)
+			if !found {
+				io.WriteString(conn, "Key not found\n")
+				return
+			}
+			fmt.Fprintf(conn, "Value: %v\n", value)
+		case "DELETE":
+			cache.Delete(scl.Collection, scl.Key)
+		case "TRUNCATE":
+			cache.Truncate(scl.Collection)
+		case "DROP":
+			cache.Drop(scl.Collection)
+		case "UPDATE":
+			_, found := cache.Get(scl.Collection, scl.Key)
+			if !found {
+				cache.Set(scl.Collection, scl.Key, scl.Value)
+				return
+			}
+
+			cache.Update(scl.Collection, scl.Key, scl.Value)
 		}
 	}
 }
