@@ -4,9 +4,7 @@ This is a pure in-memory cache for backends
 
 This allows for classic CRUD operations
 
-There is no:
-- WAL
-- in-disk data storage
+There is no in-disk data storage
 
 This is a cache, not a message broker or a hybrid mix with in-disk data. The concept of a cache is to stay in-memory, since the DB already stores data in-disk.
 

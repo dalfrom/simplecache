@@ -10,14 +10,11 @@ type Cache struct {
 	mu sync.RWMutex
 
 	Collections map[string]*Btree
-
-	Mode string // Temporal
 }
 
 var (
 	SimpleCache = Cache{
 		Collections: make(map[string]*Btree),
-		Mode:        "temporal",
 		mu:          sync.RWMutex{},
 	}
 )

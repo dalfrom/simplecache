@@ -1,3 +1,5 @@
 *.exe
 _old
 .DS_Store
+simplecache.toml
+/wal
