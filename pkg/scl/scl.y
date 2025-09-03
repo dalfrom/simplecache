@@ -2,31 +2,34 @@
 package scl
 
 import (
-  "fmt"
+    "fmt"
 )
 
-// Result AST structs
+// AST nodes
 type Statement interface{}
 
 type SetStmt struct {
-    Collection   string
-    Key     string
-    Value   string
-    Config  Config
+    Collection string
+    Key        string
+    Value      interface{}
+    Config     Config
+}
+
+type UpdateStmt struct {
+    Collection string
+    Key        string
+    Value      interface{}
+    Config     Config
 }
 
 type GetStmt struct {
-    Collection   string
-    Key     string
+    Collection string
+    Key        string // or "*" for wildcard
 }
 
 type DeleteStmt struct {
-    Collection   string
-    Key     string
-}
-
-type TruncateStmt struct {
-    Collection   string
+    Collection string
+    Key        string
 }
 
 type DropStmt struct {
@@ -34,11 +37,8 @@ type DropStmt struct {
     Key     string
 }
 
-type UpdateStmt struct {
-    Collection   string
-    Key     string
-    Value   string
-    Config  Config
+type TruncateStmt struct {
+    Collection string
 }
 
 type Config struct {
@@ -48,17 +48,25 @@ type Config struct {
 
 %union {
     str string
-    stmt Statement
     cfg Config
+    val interface{}
+    obj map[string]interface{}
+    arr []interface{}
+    stmt Statement
 }
 
-%token <str> COLLECTION KEY STRING NUMBER BOOL JSON
-%token SET GET DELETE TRUNCATE DROP UPDATE
-%token COLON SEMICOLON DOT TTI EQ ASTERISK
+%token <str> COLLECTION KEY STRING NUMBER IDENT
+%token SET GET UPDATE DELETE DROP TRUNCATE
+%token TRUE FALSE NULL
+%token DOT COLON SEMICOLON EQ ASTERISK TTI
+%token LBRACE RBRACE LBRACK RBRACK COMMA
 
-%type <stmt> statement set_stmt get_stmt delete_stmt truncate_stmt drop_stmt update_stmt
-%type <str> collection key value
+%type <stmt> statement set_stmt update_stmt get_stmt delete_stmt drop_stmt truncate_stmt
 %type <cfg> config
+%type <val> value json_value
+%type <obj> json_object members member
+%type <arr> json_array elements
+
 %%
 
 statements:
@@ -87,76 +95,104 @@ statements:
   ;
 
 statement:
-  set_stmt       { $$ = $1 }
+    set_stmt       { $$ = $1 }
+  | update_stmt    { $$ = $1 }
   | get_stmt       { $$ = $1 }
   | delete_stmt    { $$ = $1 }
-  | truncate_stmt  { $$ = $1 }
   | drop_stmt      { $$ = $1 }
-  | update_stmt    { $$ = $1 }
+  | truncate_stmt  { $$ = $1 }
   ;
 
 set_stmt:
-    SET collection DOT key COLON value {
-        $$ = &SetStmt{Collection: $2, Key: $4, Value: $6}
+    SET COLLECTION DOT KEY COLON value {
+        $$ = &SetStmt{Collection:$2, Key:$4, Value:$6}
     }
-    | SET collection DOT key COLON value config {
+    | SET COLLECTION DOT KEY COLON value config {
         $$ = &SetStmt{Collection: $2, Key: $4, Value: $6, Config: $7}
     }
   ;
 
-get_stmt:
-    GET collection DOT key {
-        $$ = &GetStmt{Collection: $2, Key: $4}
-    }
-    | GET collection DOT asterisk {
-        $$ = &GetStmt{Collection: $2, Key: "*"}
-    }
-  ;
-
-delete_stmt:
-    DELETE collection DOT key {
-        $$ = &DeleteStmt{Collection: $2, Key: $4}
-    }
-  ;
-
-truncate_stmt:
-    TRUNCATE collection {
-        $$ = &TruncateStmt{Collection: $2}
-    }
-  ;
-
-drop_stmt:
-    DROP collection {
-        $$ = &DropStmt{Collection: $2, Key: "*"}
-    }
-  ;
-
 update_stmt:
-    UPDATE collection DOT key COLON value {
-        $$ = &UpdateStmt{Collection: $2, Key: $4, Value: $6}
+    UPDATE COLLECTION DOT KEY COLON value {
+        $$ = &UpdateStmt{Collection:$2, Key:$4, Value:$6}
     }
-    | UPDATE collection DOT key COLON value config {
+    | UPDATE COLLECTION DOT KEY COLON value config {
         $$ = &UpdateStmt{Collection: $2, Key: $4, Value: $6, Config: $7}
     }
   ;
 
-collection:
-    COLLECTION
+get_stmt:
+    GET COLLECTION DOT KEY {
+        $$ = &GetStmt{Collection:$2, Key:$4}
+    }
+  | GET COLLECTION DOT ASTERISK {
+        $$ = &GetStmt{Collection:$2, Key:"*"}
+    }
   ;
 
-key:
-    KEY
+delete_stmt:
+    DELETE COLLECTION DOT KEY {
+        $$ = &DeleteStmt{Collection:$2, Key:$4}
+    }
   ;
+
+drop_stmt:
+    DROP COLLECTION {
+        $$ = &DropStmt{Collection: $2, Key: "*"}
+    }
+  ;
+
+truncate_stmt:
+    TRUNCATE COLLECTION {
+        $$ = &TruncateStmt{Collection:$2}
+    }
+  ;
+
+/* ---------- JSON support ---------- */
 
 value:
-    STRING
-  | NUMBER
-  | BOOL
-  | JSON
+    STRING          { $$ = $1 }
+  | NUMBER          { $$ = $1 }
+  | json_value      { $$ = $1 }
   ;
 
-asterisk:
-    ASTERISK
+json_value:
+    STRING          { $$ = $1 }
+  | NUMBER          { $$ = $1 }
+  | json_object     { $$ = $1 }
+  | json_array      { $$ = $1 }
+  | TRUE            { $$ = true }
+  | FALSE           { $$ = false }
+  | NULL            { $$ = nil }
+  ;
+
+json_object:
+    LBRACE RBRACE                  { $$ = map[string]interface{}{} }
+  | LBRACE members RBRACE          { $$ = $2 }
+  ;
+
+members:
+    member                         { $$ = $1 }
+  | members COMMA member           {
+        for k,v := range $3 { $1[k] = v }
+        $$ = $1
+    }
+  ;
+
+member:
+    STRING COLON json_value        { $$ = map[string]interface{}{$1: $3} }
+  | IDENT COLON json_value         { $$ = map[string]interface{}{$1: $3} } // relaxed keys (this matches {k: "v"} instead of solely {"k": "v"})
+  | KEY COLON json_value           { $$ = map[string]interface{}{$1: $3} } // relaxed keys (matches same as above)
+  ;
+
+json_array:
+    LBRACK RBRACK                  { $$ = []interface{}{} }
+  | LBRACK elements RBRACK         { $$ = $2 }
+  ;
+
+elements:
+    json_value                     { $$ = []interface{}{$1} }
+  | elements COMMA json_value      { $$ = append($1, $3) }
   ;
 
 config:

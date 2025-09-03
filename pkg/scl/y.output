@@ -19,48 +19,48 @@ state 1 // [$end]
     2 statements: statements . statement SEMICOLON
 
     $end      accept
-    DELETE    shift, and goto state 11
+    DELETE    shift, and goto state 12
     DROP      shift, and goto state 13
-    GET       shift, and goto state 10
+    GET       shift, and goto state 11
     SET       shift, and goto state 9
-    TRUNCATE  shift, and goto state 12
-    UPDATE    shift, and goto state 14
+    TRUNCATE  shift, and goto state 14
+    UPDATE    shift, and goto state 10
 
-    delete_stmt    goto state 5
+    delete_stmt    goto state 6
     drop_stmt      goto state 7
-    get_stmt       goto state 4
+    get_stmt       goto state 5
     set_stmt       goto state 3
     statement      goto state 2
-    truncate_stmt  goto state 6
-    update_stmt    goto state 8
+    truncate_stmt  goto state 8
+    update_stmt    goto state 4
 
 state 2 // DROP COLLECTION [SEMICOLON]
 
     2 statements: statements statement . SEMICOLON
 
-    SEMICOLON  shift, and goto state 47
+    SEMICOLON  shift, and goto state 73
 
-state 3 // SET COLLECTION DOT KEY COLON BOOL [SEMICOLON]
+state 3 // SET COLLECTION DOT KEY COLON FALSE [SEMICOLON]
 
     3 statement: set_stmt .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 3 (statement)
 
-state 4 // GET COLLECTION DOT ASTERISK [SEMICOLON]
+state 4 // UPDATE COLLECTION DOT KEY COLON FALSE [SEMICOLON]
 
-    4 statement: get_stmt .  [SEMICOLON]
+    4 statement: update_stmt .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 4 (statement)
 
-state 5 // DELETE COLLECTION DOT KEY [SEMICOLON]
+state 5 // GET COLLECTION DOT ASTERISK [SEMICOLON]
 
-    5 statement: delete_stmt .  [SEMICOLON]
+    5 statement: get_stmt .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 5 (statement)
 
-state 6 // TRUNCATE COLLECTION [SEMICOLON]
+state 6 // DELETE COLLECTION DOT KEY [SEMICOLON]
 
-    6 statement: truncate_stmt .  [SEMICOLON]
+    6 statement: delete_stmt .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 6 (statement)
 
@@ -70,302 +70,567 @@ state 7 // DROP COLLECTION [SEMICOLON]
 
     SEMICOLON  reduce using rule 7 (statement)
 
-state 8 // UPDATE COLLECTION DOT KEY COLON BOOL [SEMICOLON]
+state 8 // TRUNCATE COLLECTION [SEMICOLON]
 
-    8 statement: update_stmt .  [SEMICOLON]
+    8 statement: truncate_stmt .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 8 (statement)
 
 state 9 // SET
 
-    9 set_stmt: SET . collection DOT key COLON value
-   10 set_stmt: SET . collection DOT key COLON value config
+    9 set_stmt: SET . COLLECTION DOT KEY COLON value
+   10 set_stmt: SET . COLLECTION DOT KEY COLON value config
 
-    COLLECTION  shift, and goto state 16
+    COLLECTION  shift, and goto state 67
 
-    collection  goto state 41
+state 10 // UPDATE
 
-state 10 // GET
+   11 update_stmt: UPDATE . COLLECTION DOT KEY COLON value
+   12 update_stmt: UPDATE . COLLECTION DOT KEY COLON value config
 
-   11 get_stmt: GET . collection DOT key
-   12 get_stmt: GET . collection DOT asterisk
+    COLLECTION  shift, and goto state 24
 
-    COLLECTION  shift, and goto state 16
+state 11 // GET
 
-    collection  goto state 36
+   13 get_stmt: GET . COLLECTION DOT KEY
+   14 get_stmt: GET . COLLECTION DOT ASTERISK
 
-state 11 // DELETE
+    COLLECTION  shift, and goto state 20
 
-   13 delete_stmt: DELETE . collection DOT key
+state 12 // DELETE
 
-    COLLECTION  shift, and goto state 16
+   15 delete_stmt: DELETE . COLLECTION DOT KEY
 
-    collection  goto state 33
-
-state 12 // TRUNCATE
-
-   14 truncate_stmt: TRUNCATE . collection
-
-    COLLECTION  shift, and goto state 16
-
-    collection  goto state 32
+    COLLECTION  shift, and goto state 17
 
 state 13 // DROP
 
-   15 drop_stmt: DROP . collection
+   16 drop_stmt: DROP . COLLECTION
 
     COLLECTION  shift, and goto state 16
 
-    collection  goto state 31
+state 14 // TRUNCATE
 
-state 14 // UPDATE
+   17 truncate_stmt: TRUNCATE . COLLECTION
 
-   16 update_stmt: UPDATE . collection DOT key COLON value
-   17 update_stmt: UPDATE . collection DOT key COLON value config
+    COLLECTION  shift, and goto state 15
 
-    COLLECTION  shift, and goto state 16
+state 15 // TRUNCATE COLLECTION
 
-    collection  goto state 15
+   17 truncate_stmt: TRUNCATE COLLECTION .  [SEMICOLON]
 
-state 15 // UPDATE COLLECTION [DOT]
+    SEMICOLON  reduce using rule 17 (truncate_stmt)
 
-   16 update_stmt: UPDATE collection . DOT key COLON value
-   17 update_stmt: UPDATE collection . DOT key COLON value config
+state 16 // DROP COLLECTION
 
-    DOT  shift, and goto state 17
+   16 drop_stmt: DROP COLLECTION .  [SEMICOLON]
 
-state 16 // UPDATE COLLECTION
+    SEMICOLON  reduce using rule 16 (drop_stmt)
 
-   18 collection: COLLECTION .  [DOT, SEMICOLON]
+state 17 // DELETE COLLECTION
 
-    DOT        reduce using rule 18 (collection)
-    SEMICOLON  reduce using rule 18 (collection)
+   15 delete_stmt: DELETE COLLECTION . DOT KEY
 
-state 17 // UPDATE COLLECTION DOT
+    DOT  shift, and goto state 18
 
-   16 update_stmt: UPDATE collection DOT . key COLON value
-   17 update_stmt: UPDATE collection DOT . key COLON value config
+state 18 // DELETE COLLECTION DOT
+
+   15 delete_stmt: DELETE COLLECTION DOT . KEY
 
     KEY  shift, and goto state 19
 
-    key  goto state 18
+state 19 // DELETE COLLECTION DOT KEY
 
-state 18 // UPDATE COLLECTION DOT KEY [COLON]
+   15 delete_stmt: DELETE COLLECTION DOT KEY .  [SEMICOLON]
 
-   16 update_stmt: UPDATE collection DOT key . COLON value
-   17 update_stmt: UPDATE collection DOT key . COLON value config
+    SEMICOLON  reduce using rule 15 (delete_stmt)
 
-    COLON  shift, and goto state 20
+state 20 // GET COLLECTION
 
-state 19 // UPDATE COLLECTION DOT KEY
+   13 get_stmt: GET COLLECTION . DOT KEY
+   14 get_stmt: GET COLLECTION . DOT ASTERISK
 
-   19 key: KEY .  [COLON, SEMICOLON]
+    DOT  shift, and goto state 21
 
-    COLON      reduce using rule 19 (key)
-    SEMICOLON  reduce using rule 19 (key)
+state 21 // GET COLLECTION DOT
 
-state 20 // UPDATE COLLECTION DOT KEY COLON
+   13 get_stmt: GET COLLECTION DOT . KEY
+   14 get_stmt: GET COLLECTION DOT . ASTERISK
 
-   16 update_stmt: UPDATE collection DOT key COLON . value
-   17 update_stmt: UPDATE collection DOT key COLON . value config
+    ASTERISK  shift, and goto state 23
+    KEY       shift, and goto state 22
 
-    BOOL    shift, and goto state 24
-    JSON    shift, and goto state 25
-    NUMBER  shift, and goto state 23
-    STRING  shift, and goto state 22
+state 22 // GET COLLECTION DOT KEY
 
-    value  goto state 21
+   13 get_stmt: GET COLLECTION DOT KEY .  [SEMICOLON]
 
-state 21 // UPDATE COLLECTION DOT KEY COLON BOOL [SEMICOLON]
+    SEMICOLON  reduce using rule 13 (get_stmt)
 
-   16 update_stmt: UPDATE collection DOT key COLON value .  [SEMICOLON]
-   17 update_stmt: UPDATE collection DOT key COLON value . config
+state 23 // GET COLLECTION DOT ASTERISK
 
-    SEMICOLON  reduce using rule 16 (update_stmt)
-    TTI        shift, and goto state 27
+   14 get_stmt: GET COLLECTION DOT ASTERISK .  [SEMICOLON]
 
-    config  goto state 26
+    SEMICOLON  reduce using rule 14 (get_stmt)
 
-state 22 // UPDATE COLLECTION DOT KEY COLON STRING
+state 24 // UPDATE COLLECTION
 
-   20 value: STRING .  [SEMICOLON, TTI]
+   11 update_stmt: UPDATE COLLECTION . DOT KEY COLON value
+   12 update_stmt: UPDATE COLLECTION . DOT KEY COLON value config
+
+    DOT  shift, and goto state 25
+
+state 25 // UPDATE COLLECTION DOT
+
+   11 update_stmt: UPDATE COLLECTION DOT . KEY COLON value
+   12 update_stmt: UPDATE COLLECTION DOT . KEY COLON value config
+
+    KEY  shift, and goto state 26
+
+state 26 // UPDATE COLLECTION DOT KEY
+
+   11 update_stmt: UPDATE COLLECTION DOT KEY . COLON value
+   12 update_stmt: UPDATE COLLECTION DOT KEY . COLON value config
+
+    COLON  shift, and goto state 27
+
+state 27 // UPDATE COLLECTION DOT KEY COLON
+
+   11 update_stmt: UPDATE COLLECTION DOT KEY COLON . value
+   12 update_stmt: UPDATE COLLECTION DOT KEY COLON . value config
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 30
+    STRING  shift, and goto state 29
+    TRUE    shift, and goto state 34
+
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 31
+    value        goto state 28
+
+state 28 // UPDATE COLLECTION DOT KEY COLON FALSE [SEMICOLON]
+
+   11 update_stmt: UPDATE COLLECTION DOT KEY COLON value .  [SEMICOLON]
+   12 update_stmt: UPDATE COLLECTION DOT KEY COLON value . config
+
+    SEMICOLON  reduce using rule 11 (update_stmt)
+    TTI        shift, and goto state 63
+
+    config  goto state 62
+
+state 29 // UPDATE COLLECTION DOT KEY COLON STRING
+
+   18 value: STRING .  [SEMICOLON, TTI]
+   21 json_value: STRING .  [SEMICOLON, TTI]
+
+    SEMICOLON  reduce using rule 18 (value)
+    TTI        reduce using rule 18 (value)
+    conflict on SEMICOLON, reduce using rule 18, reduce using rule 21
+    conflict on TTI, reduce using rule 18, reduce using rule 21
+
+state 30 // UPDATE COLLECTION DOT KEY COLON NUMBER
+
+   19 value: NUMBER .  [SEMICOLON, TTI]
+   22 json_value: NUMBER .  [SEMICOLON, TTI]
+
+    SEMICOLON  reduce using rule 19 (value)
+    TTI        reduce using rule 19 (value)
+    conflict on SEMICOLON, reduce using rule 19, reduce using rule 22
+    conflict on TTI, reduce using rule 19, reduce using rule 22
+
+state 31 // UPDATE COLLECTION DOT KEY COLON FALSE [SEMICOLON]
+
+   20 value: json_value .  [SEMICOLON, TTI]
 
     SEMICOLON  reduce using rule 20 (value)
     TTI        reduce using rule 20 (value)
 
-state 23 // UPDATE COLLECTION DOT KEY COLON NUMBER
+state 32 // UPDATE COLLECTION DOT KEY COLON LBRACE RBRACE [COMMA]
 
-   21 value: NUMBER .  [SEMICOLON, TTI]
+   23 json_value: json_object .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
 
-    SEMICOLON  reduce using rule 21 (value)
-    TTI        reduce using rule 21 (value)
+    COMMA      reduce using rule 23 (json_value)
+    RBRACE     reduce using rule 23 (json_value)
+    RBRACK     reduce using rule 23 (json_value)
+    SEMICOLON  reduce using rule 23 (json_value)
+    TTI        reduce using rule 23 (json_value)
 
-state 24 // UPDATE COLLECTION DOT KEY COLON BOOL
+state 33 // UPDATE COLLECTION DOT KEY COLON LBRACK RBRACK [COMMA]
 
-   22 value: BOOL .  [SEMICOLON, TTI]
+   24 json_value: json_array .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
 
-    SEMICOLON  reduce using rule 22 (value)
-    TTI        reduce using rule 22 (value)
+    COMMA      reduce using rule 24 (json_value)
+    RBRACE     reduce using rule 24 (json_value)
+    RBRACK     reduce using rule 24 (json_value)
+    SEMICOLON  reduce using rule 24 (json_value)
+    TTI        reduce using rule 24 (json_value)
 
-state 25 // UPDATE COLLECTION DOT KEY COLON JSON
+state 34 // UPDATE COLLECTION DOT KEY COLON TRUE
 
-   23 value: JSON .  [SEMICOLON, TTI]
+   25 json_value: TRUE .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
 
-    SEMICOLON  reduce using rule 23 (value)
-    TTI        reduce using rule 23 (value)
+    COMMA      reduce using rule 25 (json_value)
+    RBRACE     reduce using rule 25 (json_value)
+    RBRACK     reduce using rule 25 (json_value)
+    SEMICOLON  reduce using rule 25 (json_value)
+    TTI        reduce using rule 25 (json_value)
 
-state 26 // UPDATE COLLECTION DOT KEY COLON BOOL TTI NUMBER [SEMICOLON]
+state 35 // UPDATE COLLECTION DOT KEY COLON FALSE
 
-   17 update_stmt: UPDATE collection DOT key COLON value config .  [SEMICOLON]
+   26 json_value: FALSE .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
 
-    SEMICOLON  reduce using rule 17 (update_stmt)
+    COMMA      reduce using rule 26 (json_value)
+    RBRACE     reduce using rule 26 (json_value)
+    RBRACK     reduce using rule 26 (json_value)
+    SEMICOLON  reduce using rule 26 (json_value)
+    TTI        reduce using rule 26 (json_value)
 
-state 27 // UPDATE COLLECTION DOT KEY COLON BOOL TTI
+state 36 // UPDATE COLLECTION DOT KEY COLON NULL
 
-   25 config: TTI . EQ NUMBER
-   26 config: TTI . NUMBER
+   27 json_value: NULL .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
 
-    EQ      shift, and goto state 28
-    NUMBER  shift, and goto state 29
+    COMMA      reduce using rule 27 (json_value)
+    RBRACE     reduce using rule 27 (json_value)
+    RBRACK     reduce using rule 27 (json_value)
+    SEMICOLON  reduce using rule 27 (json_value)
+    TTI        reduce using rule 27 (json_value)
 
-state 28 // UPDATE COLLECTION DOT KEY COLON BOOL TTI EQ
+state 37 // UPDATE COLLECTION DOT KEY COLON LBRACE
 
-   25 config: TTI EQ . NUMBER
+   28 json_object: LBRACE . RBRACE
+   29 json_object: LBRACE . members RBRACE
 
+    IDENT   shift, and goto state 51
+    KEY     shift, and goto state 52
+    RBRACE  shift, and goto state 47
+    STRING  shift, and goto state 50
+
+    member   goto state 49
+    members  goto state 48
+
+state 38 // UPDATE COLLECTION DOT KEY COLON LBRACK
+
+   35 json_array: LBRACK . RBRACK
+   36 json_array: LBRACK . elements RBRACK
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 40
+    RBRACK  shift, and goto state 41
+    STRING  shift, and goto state 39
+    TRUE    shift, and goto state 34
+
+    elements     goto state 42
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 43
+
+state 39 // UPDATE COLLECTION DOT KEY COLON LBRACK STRING
+
+   21 json_value: STRING .  [COMMA, RBRACE, RBRACK]
+
+    COMMA   reduce using rule 21 (json_value)
+    RBRACE  reduce using rule 21 (json_value)
+    RBRACK  reduce using rule 21 (json_value)
+
+state 40 // UPDATE COLLECTION DOT KEY COLON LBRACK NUMBER
+
+   22 json_value: NUMBER .  [COMMA, RBRACE, RBRACK]
+
+    COMMA   reduce using rule 22 (json_value)
+    RBRACE  reduce using rule 22 (json_value)
+    RBRACK  reduce using rule 22 (json_value)
+
+state 41 // UPDATE COLLECTION DOT KEY COLON LBRACK RBRACK
+
+   35 json_array: LBRACK RBRACK .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
+
+    COMMA      reduce using rule 35 (json_array)
+    RBRACE     reduce using rule 35 (json_array)
+    RBRACK     reduce using rule 35 (json_array)
+    SEMICOLON  reduce using rule 35 (json_array)
+    TTI        reduce using rule 35 (json_array)
+
+state 42 // UPDATE COLLECTION DOT KEY COLON LBRACK FALSE [COMMA]
+
+   36 json_array: LBRACK elements . RBRACK
+   38 elements: elements . COMMA json_value
+
+    COMMA   shift, and goto state 45
+    RBRACK  shift, and goto state 44
+
+state 43 // UPDATE COLLECTION DOT KEY COLON LBRACK FALSE [COMMA]
+
+   37 elements: json_value .  [COMMA, RBRACK]
+
+    COMMA   reduce using rule 37 (elements)
+    RBRACK  reduce using rule 37 (elements)
+
+state 44 // UPDATE COLLECTION DOT KEY COLON LBRACK FALSE RBRACK
+
+   36 json_array: LBRACK elements RBRACK .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
+
+    COMMA      reduce using rule 36 (json_array)
+    RBRACE     reduce using rule 36 (json_array)
+    RBRACK     reduce using rule 36 (json_array)
+    SEMICOLON  reduce using rule 36 (json_array)
+    TTI        reduce using rule 36 (json_array)
+
+state 45 // UPDATE COLLECTION DOT KEY COLON LBRACK FALSE COMMA
+
+   38 elements: elements COMMA . json_value
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 40
+    STRING  shift, and goto state 39
+    TRUE    shift, and goto state 34
+
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 46
+
+state 46 // UPDATE COLLECTION DOT KEY COLON LBRACK FALSE COMMA FALSE [COMMA]
+
+   38 elements: elements COMMA json_value .  [COMMA, RBRACK]
+
+    COMMA   reduce using rule 38 (elements)
+    RBRACK  reduce using rule 38 (elements)
+
+state 47 // UPDATE COLLECTION DOT KEY COLON LBRACE RBRACE
+
+   28 json_object: LBRACE RBRACE .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
+
+    COMMA      reduce using rule 28 (json_object)
+    RBRACE     reduce using rule 28 (json_object)
+    RBRACK     reduce using rule 28 (json_object)
+    SEMICOLON  reduce using rule 28 (json_object)
+    TTI        reduce using rule 28 (json_object)
+
+state 48 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE [COMMA]
+
+   29 json_object: LBRACE members . RBRACE
+   31 members: members . COMMA member
+
+    COMMA   shift, and goto state 60
+    RBRACE  shift, and goto state 59
+
+state 49 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE [COMMA]
+
+   30 members: member .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 30 (members)
+    RBRACE  reduce using rule 30 (members)
+
+state 50 // UPDATE COLLECTION DOT KEY COLON LBRACE STRING
+
+   32 member: STRING . COLON json_value
+
+    COLON  shift, and goto state 57
+
+state 51 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT
+
+   33 member: IDENT . COLON json_value
+
+    COLON  shift, and goto state 55
+
+state 52 // UPDATE COLLECTION DOT KEY COLON LBRACE KEY
+
+   34 member: KEY . COLON json_value
+
+    COLON  shift, and goto state 53
+
+state 53 // UPDATE COLLECTION DOT KEY COLON LBRACE KEY COLON
+
+   34 member: KEY COLON . json_value
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 40
+    STRING  shift, and goto state 39
+    TRUE    shift, and goto state 34
+
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 54
+
+state 54 // UPDATE COLLECTION DOT KEY COLON LBRACE KEY COLON FALSE [COMMA]
+
+   34 member: KEY COLON json_value .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 34 (member)
+    RBRACE  reduce using rule 34 (member)
+
+state 55 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON
+
+   33 member: IDENT COLON . json_value
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 40
+    STRING  shift, and goto state 39
+    TRUE    shift, and goto state 34
+
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 56
+
+state 56 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE [COMMA]
+
+   33 member: IDENT COLON json_value .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 33 (member)
+    RBRACE  reduce using rule 33 (member)
+
+state 57 // UPDATE COLLECTION DOT KEY COLON LBRACE STRING COLON
+
+   32 member: STRING COLON . json_value
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
+    NUMBER  shift, and goto state 40
+    STRING  shift, and goto state 39
+    TRUE    shift, and goto state 34
+
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 58
+
+state 58 // UPDATE COLLECTION DOT KEY COLON LBRACE STRING COLON FALSE [COMMA]
+
+   32 member: STRING COLON json_value .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 32 (member)
+    RBRACE  reduce using rule 32 (member)
+
+state 59 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE RBRACE
+
+   29 json_object: LBRACE members RBRACE .  [COMMA, RBRACE, RBRACK, SEMICOLON, TTI]
+
+    COMMA      reduce using rule 29 (json_object)
+    RBRACE     reduce using rule 29 (json_object)
+    RBRACK     reduce using rule 29 (json_object)
+    SEMICOLON  reduce using rule 29 (json_object)
+    TTI        reduce using rule 29 (json_object)
+
+state 60 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE COMMA
+
+   31 members: members COMMA . member
+
+    IDENT   shift, and goto state 51
+    KEY     shift, and goto state 52
+    STRING  shift, and goto state 50
+
+    member  goto state 61
+
+state 61 // UPDATE COLLECTION DOT KEY COLON LBRACE IDENT COLON FALSE COMMA IDENT COLON FALSE [COMMA]
+
+   31 members: members COMMA member .  [COMMA, RBRACE]
+
+    COMMA   reduce using rule 31 (members)
+    RBRACE  reduce using rule 31 (members)
+
+state 62 // UPDATE COLLECTION DOT KEY COLON FALSE TTI NUMBER [SEMICOLON]
+
+   12 update_stmt: UPDATE COLLECTION DOT KEY COLON value config .  [SEMICOLON]
+
+    SEMICOLON  reduce using rule 12 (update_stmt)
+
+state 63 // UPDATE COLLECTION DOT KEY COLON FALSE TTI
+
+   39 config: TTI . EQ NUMBER
+   40 config: TTI . NUMBER
+
+    EQ      shift, and goto state 64
+    NUMBER  shift, and goto state 65
+
+state 64 // UPDATE COLLECTION DOT KEY COLON FALSE TTI EQ
+
+   39 config: TTI EQ . NUMBER
+
+    NUMBER  shift, and goto state 66
+
+state 65 // UPDATE COLLECTION DOT KEY COLON FALSE TTI NUMBER
+
+   40 config: TTI NUMBER .  [SEMICOLON]
+
+    SEMICOLON  reduce using rule 40 (config)
+
+state 66 // UPDATE COLLECTION DOT KEY COLON FALSE TTI EQ NUMBER
+
+   39 config: TTI EQ NUMBER .  [SEMICOLON]
+
+    SEMICOLON  reduce using rule 39 (config)
+
+state 67 // SET COLLECTION
+
+    9 set_stmt: SET COLLECTION . DOT KEY COLON value
+   10 set_stmt: SET COLLECTION . DOT KEY COLON value config
+
+    DOT  shift, and goto state 68
+
+state 68 // SET COLLECTION DOT
+
+    9 set_stmt: SET COLLECTION DOT . KEY COLON value
+   10 set_stmt: SET COLLECTION DOT . KEY COLON value config
+
+    KEY  shift, and goto state 69
+
+state 69 // SET COLLECTION DOT KEY
+
+    9 set_stmt: SET COLLECTION DOT KEY . COLON value
+   10 set_stmt: SET COLLECTION DOT KEY . COLON value config
+
+    COLON  shift, and goto state 70
+
+state 70 // SET COLLECTION DOT KEY COLON
+
+    9 set_stmt: SET COLLECTION DOT KEY COLON . value
+   10 set_stmt: SET COLLECTION DOT KEY COLON . value config
+
+    FALSE   shift, and goto state 35
+    LBRACE  shift, and goto state 37
+    LBRACK  shift, and goto state 38
+    NULL    shift, and goto state 36
     NUMBER  shift, and goto state 30
+    STRING  shift, and goto state 29
+    TRUE    shift, and goto state 34
 
-state 29 // UPDATE COLLECTION DOT KEY COLON BOOL TTI NUMBER
+    json_array   goto state 33
+    json_object  goto state 32
+    json_value   goto state 31
+    value        goto state 71
 
-   26 config: TTI NUMBER .  [SEMICOLON]
+state 71 // SET COLLECTION DOT KEY COLON FALSE [SEMICOLON]
 
-    SEMICOLON  reduce using rule 26 (config)
-
-state 30 // UPDATE COLLECTION DOT KEY COLON BOOL TTI EQ NUMBER
-
-   25 config: TTI EQ NUMBER .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 25 (config)
-
-state 31 // DROP COLLECTION [SEMICOLON]
-
-   15 drop_stmt: DROP collection .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 15 (drop_stmt)
-
-state 32 // TRUNCATE COLLECTION [SEMICOLON]
-
-   14 truncate_stmt: TRUNCATE collection .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 14 (truncate_stmt)
-
-state 33 // DELETE COLLECTION [DOT]
-
-   13 delete_stmt: DELETE collection . DOT key
-
-    DOT  shift, and goto state 34
-
-state 34 // DELETE COLLECTION DOT
-
-   13 delete_stmt: DELETE collection DOT . key
-
-    KEY  shift, and goto state 19
-
-    key  goto state 35
-
-state 35 // DELETE COLLECTION DOT KEY [SEMICOLON]
-
-   13 delete_stmt: DELETE collection DOT key .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 13 (delete_stmt)
-
-state 36 // GET COLLECTION [DOT]
-
-   11 get_stmt: GET collection . DOT key
-   12 get_stmt: GET collection . DOT asterisk
-
-    DOT  shift, and goto state 37
-
-state 37 // GET COLLECTION DOT
-
-   11 get_stmt: GET collection DOT . key
-   12 get_stmt: GET collection DOT . asterisk
-
-    ASTERISK  shift, and goto state 40
-    KEY       shift, and goto state 19
-
-    asterisk  goto state 39
-    key       goto state 38
-
-state 38 // GET COLLECTION DOT KEY [SEMICOLON]
-
-   11 get_stmt: GET collection DOT key .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 11 (get_stmt)
-
-state 39 // GET COLLECTION DOT ASTERISK [SEMICOLON]
-
-   12 get_stmt: GET collection DOT asterisk .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 12 (get_stmt)
-
-state 40 // GET COLLECTION DOT ASTERISK
-
-   24 asterisk: ASTERISK .  [SEMICOLON]
-
-    SEMICOLON  reduce using rule 24 (asterisk)
-
-state 41 // SET COLLECTION [DOT]
-
-    9 set_stmt: SET collection . DOT key COLON value
-   10 set_stmt: SET collection . DOT key COLON value config
-
-    DOT  shift, and goto state 42
-
-state 42 // SET COLLECTION DOT
-
-    9 set_stmt: SET collection DOT . key COLON value
-   10 set_stmt: SET collection DOT . key COLON value config
-
-    KEY  shift, and goto state 19
-
-    key  goto state 43
-
-state 43 // SET COLLECTION DOT KEY [COLON]
-
-    9 set_stmt: SET collection DOT key . COLON value
-   10 set_stmt: SET collection DOT key . COLON value config
-
-    COLON  shift, and goto state 44
-
-state 44 // SET COLLECTION DOT KEY COLON
-
-    9 set_stmt: SET collection DOT key COLON . value
-   10 set_stmt: SET collection DOT key COLON . value config
-
-    BOOL    shift, and goto state 24
-    JSON    shift, and goto state 25
-    NUMBER  shift, and goto state 23
-    STRING  shift, and goto state 22
-
-    value  goto state 45
-
-state 45 // SET COLLECTION DOT KEY COLON BOOL [SEMICOLON]
-
-    9 set_stmt: SET collection DOT key COLON value .  [SEMICOLON]
-   10 set_stmt: SET collection DOT key COLON value . config
+    9 set_stmt: SET COLLECTION DOT KEY COLON value .  [SEMICOLON]
+   10 set_stmt: SET COLLECTION DOT KEY COLON value . config
 
     SEMICOLON  reduce using rule 9 (set_stmt)
-    TTI        shift, and goto state 27
+    TTI        shift, and goto state 63
 
-    config  goto state 46
+    config  goto state 72
 
-state 46 // SET COLLECTION DOT KEY COLON BOOL TTI NUMBER [SEMICOLON]
+state 72 // SET COLLECTION DOT KEY COLON FALSE TTI NUMBER [SEMICOLON]
 
-   10 set_stmt: SET collection DOT key COLON value config .  [SEMICOLON]
+   10 set_stmt: SET COLLECTION DOT KEY COLON value config .  [SEMICOLON]
 
     SEMICOLON  reduce using rule 10 (set_stmt)
 
-state 47 // DROP COLLECTION SEMICOLON
+state 73 // DROP COLLECTION SEMICOLON
 
     2 statements: statements statement SEMICOLON .  [$end, DELETE, DROP, GET, SET, TRUNCATE, UPDATE]
 
