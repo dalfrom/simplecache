@@ -65,18 +65,20 @@ func (sc *Cache) Delete(collection, key string) {
 	bt.Delete(key)
 }
 
-func (sc *Cache) Drop(collection string) {
+func (sc *Cache) Drop(collection string) bool {
 	sc.mu.Lock()
 	defer sc.mu.Unlock()
 
 	bt, ok := sc.Collections[collection]
 	if !ok {
-		return
+		return false
 	}
 
 	bt.Clear()
 
 	delete(sc.Collections, collection)
+
+	return true
 }
 
 func (sc *Cache) Truncate(collection string) {

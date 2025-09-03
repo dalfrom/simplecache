@@ -52,7 +52,12 @@ func handleConn(cache *cache.Cache, conn net.Conn) {
 		case "TRUNCATE":
 			cache.Truncate(scl.Collection)
 		case "DROP":
-			cache.Drop(scl.Collection)
+			found := cache.Drop(scl.Collection)
+			if !found {
+				io.WriteString(conn, "Collection not found\n")
+				return
+			}
+			io.WriteString(conn, fmt.Sprintf("Collection %s dropped\n", scl.Collection))
 		case "UPDATE":
 			_, found := cache.Get(scl.Collection, scl.Key)
 			if !found {
